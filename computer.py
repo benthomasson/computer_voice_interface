@@ -17,6 +17,19 @@ import json
 import speech_recognition as sr
 import pyaudio
 import time
+import openai
+
+# Replace YOUR_API_KEY with your OpenAI API key
+openai.api_key = os.environ.get('API_KEY')
+
+
+# Set the model and prompt
+model_engine = "text-davinci-003"
+prompt = "Hello"
+
+# Set the maximum number of tokens to generate in the response
+max_tokens = 128
+
 
 logger = logging.getLogger('computer')
 
@@ -49,12 +62,24 @@ def main(args=None):
             # read the audio data from the default microphone
             print("Recording...")
             audio_data = r.record(source, duration=5)
-            play(audio_data)
+            #play(audio_data)
             print("Recognizing...")
             # convert speech to text
             text = r.recognize_whisper(audio_data)
-            print(text)
-            os.system(f'say "{text}"')
+
+            # Generate a response
+            completion = openai.Completion.create(
+                engine=model_engine,
+                prompt=text,
+                max_tokens=1024,
+                temperature=0.5,
+                top_p=1,
+                frequency_penalty=0,
+                presence_penalty=0
+            )
+            # Print the response
+            print(completion.choices[0].text)
+            os.system(f'say "{completion.choices[0].text}"')
             time.sleep(1)
 
     return 0
