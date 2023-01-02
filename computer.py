@@ -52,9 +52,7 @@ def main(args=None):
             play(audio_data)
             print("Recognizing...")
             # convert speech to text
-            data = r.recognize_vosk(audio_data)
-            print(data)
-            text = json.loads(data)["text"]
+            text = r.recognize_whisper(audio_data)
             print(text)
             os.system(f'say "{text}"')
             time.sleep(1)
