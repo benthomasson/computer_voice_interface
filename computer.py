@@ -13,11 +13,11 @@ from docopt import docopt
 import logging
 import sys
 import os
-import json
 import speech_recognition as sr
 import pyaudio
 import time
 import openai
+import subprocess
 
 # Replace YOUR_API_KEY with your OpenAI API key
 openai.api_key = os.environ.get('API_KEY')
@@ -33,6 +33,7 @@ max_tokens = 128
 
 logger = logging.getLogger('computer')
 
+
 def play(audio_data):
 
     p = pyaudio.PyAudio()
@@ -43,10 +44,15 @@ def play(audio_data):
     p.terminate()
 
 
+def say(text):
+    print(text)
+    try:
+        subprocess.run(["say", text])
+    except KeyboardInterrupt:
+        pass
 
-def main(args=None):
-    if args is None:
-        args = sys.argv[1:]
+
+def parse_args(args):
     parsed_args = docopt(__doc__, args)
     if parsed_args['--debug']:
         logging.basicConfig(level=logging.DEBUG)
@@ -55,36 +61,61 @@ def main(args=None):
     else:
         logging.basicConfig(level=logging.WARNING)
 
+
+def recognize_audio(r, source):
+    # read the audio data from the default microphone
+    print("Ready")
+    audio_data = r.record(source, duration=5)
+    # play(audio_data)
+    # convert speech to text
+    text = r.recognize_whisper(audio_data)
+    return text
+
+
+def generate_response(prompt):
+
+    # Generate a response
+    try:
+        completion = openai.Completion.create(
+            engine=model_engine,
+            prompt=prompt,
+            max_tokens=1024,
+            temperature=0.5,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0
+        )
+        print(completion.choices)
+        # Print the response
+        say(completion.choices[0].text)
+        time.sleep(1)
+    except KeyboardInterrupt:
+        pass
+
+
+def main(args=None):
+    if args is None:
+        args = sys.argv[1:]
+    parse_args(args)
+
     r = sr.Recognizer()
     with sr.Microphone(sample_rate=8000) as source:
         r.adjust_for_ambient_noise(source, duration=5)
         while True:
-            # read the audio data from the default microphone
-            print("Recording...")
-            audio_data = r.record(source, duration=5)
-            #play(audio_data)
-            print("Recognizing...")
-            # convert speech to text
-            text = r.recognize_whisper(audio_data)
+            text = recognize_audio(r, source)
 
-            # Generate a response
-            completion = openai.Completion.create(
-                engine=model_engine,
-                prompt=text,
-                max_tokens=1024,
-                temperature=0.5,
-                top_p=1,
-                frequency_penalty=0,
-                presence_penalty=0
-            )
-            # Print the response
-            print(completion.choices[0].text)
-            os.system(f'say "{completion.choices[0].text}"')
-            time.sleep(1)
+            if text.strip() == "":
+                continue
+
+            print(f"You said {text}")
+            ok = input("Is this correct? [y/n] ")
+            if ok == "n":
+                continue
+
+            generate_response(text)
 
     return 0
 
-if __name__ == '__main__':
-    import sys
-    sys.exit(main(sys.argv[1:]))
 
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))
