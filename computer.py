@@ -88,7 +88,6 @@ def generate_response(prompt):
         print(completion.choices)
         # Print the response
         say(completion.choices[0].text)
-        time.sleep(1)
     except KeyboardInterrupt:
         pass
 
@@ -102,7 +101,10 @@ def main(args=None):
     with sr.Microphone(sample_rate=8000) as source:
         r.adjust_for_ambient_noise(source, duration=5)
         while True:
-            text = recognize_audio(r, source)
+            try:
+                text = recognize_audio(r, source)
+            except KeyboardInterrupt:
+                return
 
             if text.strip() == "":
                 continue
@@ -113,6 +115,7 @@ def main(args=None):
                 continue
 
             generate_response(text)
+            time.sleep(1)
 
     return 0
 
