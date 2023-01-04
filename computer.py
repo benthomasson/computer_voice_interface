@@ -18,6 +18,7 @@ import pyaudio
 import time
 import openai
 import subprocess
+import string
 from computer_fsm import ComputerFSM
 
 # Replace YOUR_API_KEY with your OpenAI API key
@@ -109,17 +110,23 @@ def main(args=None):
             except KeyboardInterrupt:
                 return
 
-            if text.strip() == "":
+            text = text.strip()
+            text = text.lower()
+            # remove all punctuation
+            text = text.translate(str.maketrans('', '', string.punctuation))
+            print(text)
+
+            if text == "":
                 continue
 
-            print(f"You said {text}")
+            print(f"You said '{text}'")
             ok = input("Is this correct? [y/n] ")
             if ok == "n":
                 continue
 
             fsm.run(text)
 
-            generate_response(text)
+            #generate_response(text)
             time.sleep(1)
 
     return 0

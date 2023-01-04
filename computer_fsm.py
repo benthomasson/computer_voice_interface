@@ -3,6 +3,9 @@
 # When it hears computer it will change state to "computer" and then
 # list for further commmands.
 
+import gpt3
+import voice
+
 
 class StateMachine(object):
 
@@ -14,6 +17,7 @@ class StateMachine(object):
     def transition(self, text):
         new_state = self.state.transition(text)
         if new_state is not None:
+            print("Transitioning to state: " + new_state.name)
             self.state.exit()
             self.state = new_state
             self.state.enter()
@@ -50,7 +54,10 @@ class InitialState(State):
         super().__init__("initial", states)
 
     def init(self):
-        super().init({"computer": self.states["computer"]})
+        super().init({"computer": self.states["computer"],
+                      "shutdown": self.states["shutdown"],
+                      "shut down": self.states["shutdown"],
+                      "hello computer": self.states["computer"]})
 
 
 class ComputerState(State):
@@ -60,13 +67,19 @@ class ComputerState(State):
 
     def init(self):
         super().init({"exit": self.states["initial"],
-                      "shutdown": self.states["shutdown"]})
+                      "shutdown": self.states["shutdown"],
+                      "shut down": self.states["shutdown"]})
 
     def transition(self, text):
         next_state = super().transition(text)
         if next_state is None:
             print("Computer heard:", text)
+            voice.say(gpt3.generate_response(text))
         return next_state
+
+    def enter(self):
+        super().enter()
+        voice.say(gpt3.generate_response("hello computer"))
 
 
 class ShutdownState(State):
@@ -79,7 +92,9 @@ class ShutdownState(State):
 
     def enter(self):
         super().enter()
+        voice.say(gpt3.generate_response("goodbye"))
         print("Shutting down")
+        raise SystemExit
 
 
 class ComputerFSM(StateMachine):
