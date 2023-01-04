@@ -114,15 +114,16 @@ def main(args=None):
             text = text.lower()
             # remove all punctuation
             text = text.translate(str.maketrans('', '', string.punctuation))
-            print(text)
-
             if text == "":
                 continue
 
-            print(f"You said '{text}'")
-            ok = input("Is this correct? [y/n] ")
-            if ok == "n":
+            if text == "15 15 15 15 15 15 15":
                 continue
+
+            print(f"You said '{text}'")
+            #ok = input("Is this correct? [y/n] ")
+            #if ok == "n":
+            #    continue
 
             fsm.run(text)
 

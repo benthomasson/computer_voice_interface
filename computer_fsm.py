@@ -18,9 +18,9 @@ class StateMachine(object):
         new_state = self.state.transition(text)
         if new_state is not None:
             print("Transitioning to state: " + new_state.name)
-            self.state.exit()
+            self.state.exit(text)
             self.state = new_state
-            self.state.enter()
+            self.state.enter(text)
 
     def run(self, text):
         self.transition(text)
@@ -35,10 +35,10 @@ class State(object):
     def init(self, transitions):
         self.transitions = transitions
 
-    def enter(self):
+    def enter(self, text=None):
         print("Entering state", self.name)
 
-    def exit(self):
+    def exit(self, text=None):
         print("Exiting state", self.name)
 
     def transition(self, text):
@@ -57,7 +57,12 @@ class InitialState(State):
         super().init({"computer": self.states["computer"],
                       "shutdown": self.states["shutdown"],
                       "shut down": self.states["shutdown"],
-                      "hello computer": self.states["computer"]})
+                      "goodbye": self.states["shutdown"],
+                      "good night computer": self.states["shutdown"],
+                      "good night": self.states["shutdown"],
+                      "hello computer": self.states["computer"],
+                      "good morning computer": self.states["computer"],
+                     })
 
 
 class ComputerState(State):
@@ -68,6 +73,10 @@ class ComputerState(State):
     def init(self):
         super().init({"exit": self.states["initial"],
                       "shutdown": self.states["shutdown"],
+                      "goodbye": self.states["shutdown"],
+                      "good bye": self.states["shutdown"],
+                      "good night computer": self.states["shutdown"],
+                      "good night": self.states["shutdown"],
                       "shut down": self.states["shutdown"]})
 
     def transition(self, text):
@@ -77,9 +86,12 @@ class ComputerState(State):
             voice.say(gpt3.generate_response(text))
         return next_state
 
-    def enter(self):
+    def enter(self, text=None):
         super().enter()
-        voice.say(gpt3.generate_response("hello computer"))
+        if text is None:
+            voice.say(gpt3.generate_response("hello computer"))
+        else:
+            voice.say(gpt3.generate_response(text))
 
 
 class ShutdownState(State):
@@ -88,13 +100,23 @@ class ShutdownState(State):
         super().__init__("shutdown", states)
 
     def init(self):
-        super().init({})
+        super().init({"computer": self.states["computer"],
+                      "shutdown": self.states["shutdown"],
+                      "shut down": self.states["shutdown"],
+                      "good night computer": self.states["shutdown"],
+                      "goodbye": self.states["shutdown"],
+                      "hello computer": self.states["computer"],
+                      "good morning computer": self.states["computer"],
+                     })
 
-    def enter(self):
+    def enter(self, text=None):
         super().enter()
-        voice.say(gpt3.generate_response("goodbye"))
-        print("Shutting down")
-        raise SystemExit
+        if text is None:
+            voice.say(gpt3.generate_response("goodbye"))
+        elif text == "shut down" or text == "shutdown":
+            voice.say(gpt3.generate_response("goodbye"))
+        else:
+            voice.say(gpt3.generate_response(text))
 
 
 class ComputerFSM(StateMachine):
