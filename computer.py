@@ -18,6 +18,7 @@ import pyaudio
 import time
 import openai
 import subprocess
+from computer_fsm import ComputerFSM
 
 # Replace YOUR_API_KEY with your OpenAI API key
 openai.api_key = os.environ.get('API_KEY')
@@ -97,6 +98,8 @@ def main(args=None):
         args = sys.argv[1:]
     parse_args(args)
 
+    fsm = ComputerFSM()
+
     r = sr.Recognizer()
     with sr.Microphone(sample_rate=8000) as source:
         r.adjust_for_ambient_noise(source, duration=5)
@@ -113,6 +116,8 @@ def main(args=None):
             ok = input("Is this correct? [y/n] ")
             if ok == "n":
                 continue
+
+            fsm.run(text)
 
             generate_response(text)
             time.sleep(1)
