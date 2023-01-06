@@ -67,7 +67,7 @@ def parse_args(args):
 def recognize_audio(r, source):
     # read the audio data from the default microphone
     print("Ready")
-    audio_data = r.record(source, duration=5)
+    audio_data = r.listen(source)
     # play(audio_data)
     # convert speech to text
     text = r.recognize_whisper(audio_data)
