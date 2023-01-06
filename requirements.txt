@@ -65,5 +65,5 @@ undetected-chromedriver==3.2.1
 urllib3==1.26.13
 vosk==0.3.44
 websockets==10.4
-whisper
+-e git+https://github.com/openai/whisper.git#egg=whisper
 wsproto==1.2.0
