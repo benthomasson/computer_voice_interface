@@ -9,13 +9,14 @@ import voice
 
 class StateMachine(object):
 
-    def __init__(self, states, initial_state):
+    def __init__(self, states, initial_state, context):
         self.states = states
         self.state = initial_state
         self.state.enter()
+        self.context = context
 
     def transition(self, text):
-        new_state = self.state.transition(text)
+        new_state = self.state.transition(text, context=self.context)
         if new_state is not None:
             print("Transitioning to state: " + new_state.name)
             self.state.exit(text)
@@ -41,7 +42,7 @@ class State(object):
     def exit(self, text=None):
         print("Exiting state", self.name)
 
-    def transition(self, text):
+    def transition(self, text, context):
         if text in self.transitions:
             return self.transitions[text]
         else:
@@ -62,7 +63,7 @@ class InitialState(State):
                       "good night": self.states["shutdown"],
                       "hello computer": self.states["computer"],
                       "good morning computer": self.states["computer"],
-                     })
+                      })
 
 
 class ComputerState(State):
@@ -79,10 +80,12 @@ class ComputerState(State):
                       "good night": self.states["shutdown"],
                       "shut down": self.states["shutdown"]})
 
-    def transition(self, text):
-        next_state = super().transition(text)
+    def transition(self, text, context):
+        next_state = super().transition(text, context)
         if next_state is None:
             print("Computer heard:", text)
+            if context.get('prompt'):
+                text = context['prompt'] + "\n" + text
             voice.say(gpt3.generate_response(text))
         return next_state
 
@@ -107,7 +110,7 @@ class ShutdownState(State):
                       "goodbye": self.states["shutdown"],
                       "hello computer": self.states["computer"],
                       "good morning computer": self.states["computer"],
-                     })
+                      })
 
     def enter(self, text=None):
         super().enter()
@@ -121,12 +124,12 @@ class ShutdownState(State):
 
 class ComputerFSM(StateMachine):
 
-    def __init__(self):
+    def __init__(self, context):
         self.states = {}
         self.states.update({"shutdown": ShutdownState(self.states)})
         self.states.update({"computer": ComputerState(self.states)})
         self.states.update({"initial": InitialState(self.states)})
-        super().__init__(self.states, self.states["initial"])
+        super().__init__(self.states, self.states["initial"], context)
         for state in self.states.values():
             state.init()
 

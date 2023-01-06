@@ -5,9 +5,10 @@ Usage:
     computer [options]
 
 Options:
-    -h, --help        Show this page
-    --debug            Show debug logging
-    --verbose        Show verbose logging
+    -h, --help          Show this page
+    --debug             Show debug logging
+    --verbose           Show verbose logging
+    --prompt=<prompt>   Prompt to use
 """
 from docopt import docopt
 import logging
@@ -62,6 +63,7 @@ def parse_args(args):
         logging.basicConfig(level=logging.INFO)
     else:
         logging.basicConfig(level=logging.WARNING)
+    return parsed_args
 
 
 def recognize_audio(r, source):
@@ -100,9 +102,15 @@ def generate_response(prompt):
 def main(args=None):
     if args is None:
         args = sys.argv[1:]
-    parse_args(args)
+    parsed_args = parse_args(args)
 
-    fsm = ComputerFSM()
+    prompt_file = parsed_args['--prompt']
+    prompt = None
+    if prompt_file and os.path.exists(prompt_file):
+        with open(prompt_file, 'r') as f:
+            prompt = f.read()
+
+    fsm = ComputerFSM({'prompt': prompt})
 
     r = sr.Recognizer()
     with sr.Microphone(sample_rate=8000) as source:
@@ -124,13 +132,13 @@ def main(args=None):
                 continue
 
             print(f"You said '{text}'")
-            #ok = input("Is this correct? [y/n] ")
-            #if ok == "n":
+            # ok = input("Is this correct? [y/n] ")
+            # if ok == "n":
             #    continue
 
             fsm.run(text)
 
-            #generate_response(text)
+            # generate_response(text)
             time.sleep(1)
 
     return 0
