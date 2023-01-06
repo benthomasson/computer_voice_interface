@@ -85,7 +85,7 @@ class ComputerState(State):
         if next_state is None:
             print("Computer heard:", text)
             if context.get('prompt'):
-                text = context['prompt'] + "\n" + text
+                text = context['prompt'] + " " + text
             voice.say(gpt3.generate_response(text))
         return next_state
 
