@@ -19,6 +19,15 @@ from queue import Queue
 
 logger = logging.getLogger("computer")
 
+IGNORE_STRINGS = ['1.5% 1.5% 1.5% 1.5% 1.5% 1.5% 1.5%',
+                  '2.5G 2.5G 2.5G 2.5G 2.5G',
+                  '1,5% 1,5% 1,5% 1,5% 1,5% 1,5%',
+                  '1.5kg 1.5kg 1.5kg 1.5kg',
+                  '1 cdc 1 cdc 1 cdc 1 cdc 1 cdc',
+                  '1.5% 1.5% 1.5% 1.5% 1.5%',
+                  '1.5% 2.5% 1.5% 1.5% 1.5% 1.5% 1.5%',
+                 ]
+
 
 # background recognizer thread
 def recognize_audio_thread(r, queue):
@@ -33,6 +42,8 @@ def recognize_audio_thread(r, queue):
             return
         text = text.strip()
         if text == "":
+            continue
+        if text in IGNORE_STRINGS:
             continue
 
         print(text)
