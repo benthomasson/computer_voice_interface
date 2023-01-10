@@ -15,6 +15,9 @@ import os
 import sys
 import openai
 import gpt3
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
 
 logger = logging.getLogger("summarize")
 
@@ -36,9 +39,13 @@ def main(args=None):
     with open(parsed_args["<text-file>"]) as f:
         text = f.read()
 
-    prompt = "Summarize this text: " + text
 
-    print(gpt3.generate_response(prompt))
+    doc = nlp(text)
+    # Summarize the text
+    prompt = "Summarize this text: " + text
+    print (len(doc))
+
+    print(gpt3.generate_response(prompt, max_tokens=256))
     return 0
 
 
