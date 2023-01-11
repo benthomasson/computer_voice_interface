@@ -5,9 +5,11 @@ Usage:
     summarize [options] <text-file>
 
 Options:
-    -h, --help        Show this page
+    -h, --help         Show this page
     --debug            Show debug logging
-    --verbose        Show verbose logging
+    --verbose          Show verbose logging
+    --chunk-size=<c>   Chunk size [default: 3500]
+    --tokens=<t>       Max tokens [default: 256]
 """
 from docopt import docopt
 import logging
@@ -23,6 +25,11 @@ logger = logging.getLogger("summarize")
 
 # Replace YOUR_API_KEY with your OpenAI API key
 openai.api_key = os.environ.get("API_KEY")
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
 
 
 def main(args=None):
@@ -40,12 +47,16 @@ def main(args=None):
         text = f.read()
 
 
+    chunk_size = int(parsed_args["--chunk-size"])
+    max_tokens = int(parsed_args["--tokens"])
+
     doc = nlp(text)
     # Summarize the text
-    prompt = "Summarize this text: " + text
-    print (len(doc))
-
-    print(gpt3.generate_response(prompt, max_tokens=256))
+    #for each chunk, summarize
+    for i, chunk in enumerate(chunks(doc, chunk_size)):
+        print(i)
+        prompt = "Summarize this text: " + str(chunk)
+        print(gpt3.generate_response(prompt, max_tokens=max_tokens))
     return 0
 
 

@@ -7,7 +7,7 @@ max_tokens = 128
 
 def generate_response(prompt, max_tokens=1024):
 
-    print("Prompt: ", prompt)
+    #print("Prompt: ", prompt)
 
     # Generate a response
     while True:
