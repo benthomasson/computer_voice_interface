@@ -81,15 +81,10 @@ def main(args=None):
         r.adjust_for_ambient_noise(source, duration=5)
         print("Ready", file=sys.stderr)
         audio_queue = Queue()
-        listener_thread = Thread(target=listen_for_audio,
-                                 args=(r, source, audio_queue))
-        listener_thread.start()
         recognizer_thread = Thread(target=recognize_audio_thread,
                                    args=(r, audio_queue))
         recognizer_thread.start()
-
-        listener_thread.join()
-        recognizer_thread.join()
+        listen_for_audio(r, source, audio_queue)
 
     return 0
 
