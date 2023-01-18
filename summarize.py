@@ -55,7 +55,7 @@ def main(args=None):
     #for each chunk, summarize
     for i, chunk in enumerate(chunks(doc, chunk_size)):
         print(i)
-        prompt = "Summarize this text: " + str(chunk)
+        prompt = "Summarize this: " + str(chunk)
         print(gpt3.generate_response(prompt, max_tokens=max_tokens))
     return 0
 

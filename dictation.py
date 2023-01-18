@@ -32,6 +32,7 @@ IGNORE_STRINGS = ['1.5% 1.5% 1.5% 1.5% 1.5% 1.5% 1.5%',
 # background recognizer thread
 def recognize_audio_thread(r, queue):
     while True:
+        print('Waiting on audio...', file=sys.stderr)
         audio_data = queue.get()
         try:
             print("Recognizing...", file=sys.stderr)
@@ -65,9 +66,11 @@ def listen_for_audio(r, source, queue):
     while True:
         try:
             print("Listening...", file=sys.stderr)
-            audio_data = r.listen(source, timeout=5)
+            audio_data = r.listen(source, timeout=5, phrase_time_limit=30)
+            print("Got audio", file=sys.stderr)
             queue.put(audio_data)
         except sr.WaitTimeoutError:
+            print("Timeout", file=sys.stderr)
             pass
 
 
