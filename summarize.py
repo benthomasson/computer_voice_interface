@@ -26,10 +26,11 @@ logger = logging.getLogger("summarize")
 # Replace YOUR_API_KEY with your OpenAI API key
 openai.api_key = os.environ.get("API_KEY")
 
+
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        yield lst[i: i + n]
 
 
 def main(args=None):
@@ -46,16 +47,19 @@ def main(args=None):
     with open(parsed_args["<text-file>"]) as f:
         text = f.read()
 
-
     chunk_size = int(parsed_args["--chunk-size"])
     max_tokens = int(parsed_args["--tokens"])
 
     doc = nlp(text)
     # Summarize the text
-    #for each chunk, summarize
+    # for each chunk, summarize
     for i, chunk in enumerate(chunks(doc, chunk_size)):
         print(i)
-        prompt = "Summarize this: " + str(chunk)
+        prompt = (
+            "Summarize the text starting with BEGIN and ending with END: \nBEGIN\n"
+            + str(chunk)
+            + "\nEND"
+        )
         print(gpt3.generate_response(prompt, max_tokens=max_tokens))
     return 0
 
