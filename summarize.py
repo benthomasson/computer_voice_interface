@@ -15,16 +15,12 @@ from docopt import docopt
 import logging
 import os
 import sys
-import openai
-import gpt3
+import llama2
 import spacy
 
 nlp = spacy.load("en_core_web_sm")
 
 logger = logging.getLogger("summarize")
-
-# Replace YOUR_API_KEY with your OpenAI API key
-openai.api_key = os.environ.get("API_KEY")
 
 
 def chunks(lst, n):
@@ -60,7 +56,7 @@ def main(args=None):
             + str(chunk)
             + "\nEND"
         )
-        print(gpt3.generate_response(prompt, max_tokens=max_tokens))
+        print(llama2.generate_response(prompt, max_tokens=max_tokens))
     return 0
 
 
